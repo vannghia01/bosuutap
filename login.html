@@ -5,97 +5,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Đăng nhập – Viện Hải dương học</title>
 <style>
-:root{--bg:#0b0d10;--fg:#e7ecef;--muted:#9aa4ad;--card:#14181d}
-*{box-sizing:border-box} body{margin:0;background:#0b0d10;color:var(--fg);font:500 15px/1.45 system-ui}
-.header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #1f252c}
-.header img{width:40px;height:40px;border-radius:50%;border:1px solid #233}
-.header .title{font-weight:700}
-.nav{position:absolute;left:12px;top:10px;display:flex;gap:8px}
-.nav a{padding:6px 10px;border-radius:10px;border:1px solid #223;background:#14181d;color:var(--fg);text-decoration:none}
-.wrap{max-width:420px;margin:40px auto;background:var(--card);border:1px solid #1f252c;border-radius:16px;padding:18px}
+:root{--fg:#e7ecef}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;
+  font:500 15px/1.45 system-ui,Segoe UI,Roboto,Arial;
+  background:#07131e url('ocean.jpg') center/cover fixed no-repeat;color:var(--fg)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:-1}
+/* Header */
+header{border-bottom:1px solid #1e242b}
+.header-top{display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:20px 24px;background:url('banner.jpg') center/cover no-repeat;color:#fff;position:relative}
+.header-top::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.header-top>*{position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.logo{width:50px;height:50px;border-radius:50%;border:2px solid #fff;background:#fff;object-fit:cover}
+.title{font-size:22px;font-weight:700}
+.nav{display:flex;gap:8px}
+.nav a{padding:8px 14px;border-radius:10px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.4);color:#fff;text-decoration:none}
+/* Login form */
+.main{flex:1;display:flex;align-items:center;justify-content:center}
+.form-box{background:rgba(20,24,29,.92);padding:30px;border-radius:16px;width:100%;max-width:400px}
+.form-box h2{text-align:center;margin:0 0 20px}
 label{display:block;margin:10px 0 6px}
-input{width:100%;padding:10px;border-radius:10px;border:1px solid #293139;background:#0f141a;color:var(--fg)}
-button{width:100%;margin-top:14px;padding:10px;border-radius:10px;border:1px solid #2a323a;background:#172029;color:var(--fg);cursor:pointer}
-.small{color:var(--muted);font-size:13px;margin-top:8px}
+input{width:100%;padding:10px;border-radius:8px;border:1px solid #293139;background:#0f141a;color:#fff}
+button.login-btn{width:100%;margin-top:16px;padding:12px;border:none;border-radius:8px;background:#1f6feb;color:#fff;font-weight:600;cursor:pointer}
+.error{color:#ff6b6b;margin-top:10px;text-align:center}
+/* Footer */
+footer{position:relative;padding:30px 20px;text-align:center;
+  background:url('banner.jpg') center/cover no-repeat;color:#fff;border-top:1px solid #004d70}
+footer::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)}
+footer>*{position:relative;z-index:1}
+footer p{margin:6px 0}
+footer .copy{font-size:13px;opacity:.85}
 </style>
-<!-- sql.js (SQLite WebAssembly) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 </head>
 <body>
-<div class="nav">
-  <a href="index.html">Trang chủ</a>
-  <a href="login.html">Đăng nhập</a>
-</div>
-<header class="header">
-  <img src="logo.png" alt="Logo">
-  <div class="title">Viện Hải dương học</div>
+<div class="overlay"></div>
+<header>
+  <div class="header-top">
+    <a href="index.html" class="brand"><img class="logo" src="logo.png"><div class="title">Viện Hải dương học</div></a>
+    <div class="nav"><a href="index.html">Trang chủ</a></div>
+  </div>
 </header>
-
-<main class="wrap">
-  <h2 style="margin:0 0 10px">Đăng nhập</h2>
-  <form id="form">
-    <label>Tên đăng nhập</label>
-    <input id="u" autocomplete="username" />
-    <label>Mật khẩu</label>
-    <input id="p" type="password" autocomplete="current-password" />
-    <button>Đăng nhập</button>
-  </form>
-  <div id="msg" class="small" style="color:#f99"></div>
+<main class="main">
+  <div class="form-box">
+    <h2>Đăng nhập</h2>
+    <form id="loginForm">
+      <label for="username">Tên đăng nhập</label>
+      <input type="text" id="username" required>
+      <label for="password">Mật khẩu</label>
+      <input type="password" id="password" required>
+      <button type="submit" class="login-btn">Đăng nhập</button>
+      <div id="error" class="error"></div>
+    </form>
+  </div>
 </main>
-
+<footer>
+  <p><strong>Viện Hải dương học</strong></p>
+  <p>Địa chỉ: 01 Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
+  <p>Điện thoại: (84.258) 590 037</p>
+  <p class="copy">© 2025 - Trung tâm Dữ liệu và Ứng dụng khoa học công nghệ Biển.</p>
+</footer>
 <script>
-/* Khởi tạo hoặc tải DB SQLite từ localStorage */
-let db;
-async function initDB(){
-  const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
-  const saved = localStorage.getItem('vhnh_users_db');
-  db = saved ? new SQL.Database(Uint8Array.from(atob(saved), c => c.charCodeAt(0)))
-             : new SQL.Database();
-
-  // Tạo bảng & seed nếu lần đầu
-  db.run(`CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT);`);
-  const res = db.exec(`SELECT count(*) AS c FROM users`)[0];
-  const count = res ? res.values[0][0] : 0;
-
-  if(!count){
-    const users = ['admin','nhaplieu1','nhaplieu2','nhaplieu3','nhaplieu4'];
-    db.run("BEGIN");
-    for(const u of users){
-      db.run("INSERT INTO users(username,password) VALUES(?,?)",[u,'01CauDa']);
-    }
-    db.run("COMMIT");
-    persistDB();
-  }
-}
-function persistDB(){
-  const binaryArray = db.export();
-  const b64 = btoa(Array.from(binaryArray).map(x=>String.fromCharCode(x)).join(''));
-  localStorage.setItem('vhnh_users_db', b64);
-}
-
-initDB();
-
-document.getElementById('form').addEventListener('submit', (e)=>{
-  e.preventDefault();
-  const u = document.getElementById('u').value.trim();
-  const p = document.getElementById('p').value;
-  if(!u||!p){return;}
-
-  try{
-    const stmt = db.prepare("SELECT username FROM users WHERE username = ? AND password = ?");
-    stmt.bind([u,p]);
-    const ok = stmt.step();
-    stmt.free();
-    if(ok){
-      localStorage.setItem('loggedInUser', u);
-      location.href = 'admin.html';
-    }else{
-      document.getElementById('msg').textContent = 'Sai tên đăng nhập hoặc mật khẩu.';
-    }
-  }catch(err){
-    document.getElementById('msg').textContent = 'Lỗi đăng nhập: ' + err.message;
-  }
-});
+const USERS=["admin","nhaplieu1","nhaplieu2","nhaplieu3","nhaplieu4"],PASSWORD="01CauDa";
+document.getElementById('loginForm').onsubmit=function(e){e.preventDefault();const u=username.value.trim(),p=password.value.trim();if(USERS.includes(u)&&p===PASSWORD){localStorage.setItem('loggedInUser',u);location.href="admin.html";}else{error.textContent="Sai tên đăng nhập hoặc mật khẩu";}};
 </script>
 </body>
 </html>
