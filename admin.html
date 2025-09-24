@@ -19,8 +19,7 @@ body{
 }
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:-1}
 
-/* Header-top = Banner */
-header{border-bottom:1px solid #1e242b}
+  header{border-bottom:1px solid #1e242b}
 .header-top{
   display:flex;align-items:center;justify-content:space-between;gap:14px;
   padding:20px 24px;
@@ -40,7 +39,6 @@ header{border-bottom:1px solid #1e242b}
   color:#fff;text-decoration:none;cursor:pointer
 }
 
-/* Layout */
 .wrap{max-width:1100px;margin:16px auto;padding:0 16px;display:grid;grid-template-columns:360px 1fr;gap:16px}
 .panel{background:rgba(20,24,29,.95);border:1px solid #1f252c;border-radius:16px;padding:14px}
 label{display:block;margin:8px 0 6px}
@@ -54,7 +52,6 @@ input[type="text"]{width:100%;padding:10px;border-radius:10px;border:1px solid #
 @media (max-width:1000px){.wrap{grid-template-columns:1fr}}
 .tox.tox-tinymce{border-radius:12px; overflow:hidden}
 
-/* Footer (banner) */
 footer{position:relative;margin-top:40px;padding:30px 20px;text-align:center;
   background:url('banner.jpg') center/cover no-repeat;color:#fff;border-top:1px solid #004d70}
 footer::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)}
@@ -80,7 +77,7 @@ footer .copy{font-size:13px;opacity:0.85}
 </header>
 
 <main class="wrap">
-  <!-- Panel danh sách & công cụ -->
+
   <section class="panel">
     <h3 style="margin:0 0 8px">Bài viết</h3>
 
@@ -112,17 +109,16 @@ footer .copy{font-size:13px;opacity:0.85}
     <input id="titleInput" type="text" placeholder="Nhập tiêu đề bài viết" />
     <textarea id="editor"></textarea>
     <div class="note">
-      • Dán ảnh trực tiếp (Ctrl/Cmd + V) hoặc chèn ảnh → ảnh sẽ lưu dạng <code>base64</code>.<br>
-      • Ngày hiển thị theo định dạng <b>dd/mm/yyyy</b> trên trang chủ và trang bài viết.
+      • Dán ảnh trực tiếp (Ctrl/Cmd + V) hoặc chèn ảnh. 
     </div>
   </section>
 </main>
 
 <footer>
   <p><strong>Viện Hải dương học</strong></p>
-  <p>Địa chỉ: Số 01, đường Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
+  <p>Địa chỉ: Số 01 Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
   <p>Điện thoại: (84.258) 590 037</p>
-  <p class="copy">© 2025 - Trung tâm Dữ liệu và Ứng dụng khoa học công nghệ Biển.</p>
+  <p>Copyright © 2025 - Trung tâm Dữ liệu và Ứng dụng khoa học công nghệ Biển.</p>
 </footer>
 
 <script>
@@ -351,3 +347,4 @@ refreshList();
 </script>
 </body>
 </html>
+
