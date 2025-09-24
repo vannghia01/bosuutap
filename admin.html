@@ -21,12 +21,12 @@ body{
 header{border-bottom:1px solid #1e242b}
 .header-top{
   display:flex;align-items:center;justify-content:space-between;gap:14px;
-  padding:12px 14px;
+  padding:20px 24px;
   background:url('banner.jpg') center/cover no-repeat;
   color:#fff;position:relative;
 }
 .header-top::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)}
-.header-top > *{position:relative;z-index:1}
+.header-top>*{position:relative;z-index:1}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
 .logo{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #fff;background:#fff}
 .title{font-size:22px;font-weight:700}
@@ -53,9 +53,12 @@ input[type="text"]{width:100%;padding:10px;border-radius:10px;border:1px solid #
 .tox.tox-tinymce{border-radius:12px; overflow:hidden}
 
 /* Footer */
-footer{margin-top:40px;padding:20px;text-align:center;background:rgba(11,13,16,.85);color:var(--fg);border-top:1px solid #222}
+footer{position:relative;margin-top:40px;padding:30px 20px;text-align:center;
+  background:url('banner.jpg') center/cover no-repeat;color:#fff;border-top:1px solid #004d70}
+footer::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)}
+footer>*{position:relative;z-index:1}
 footer p{margin:6px 0}
-footer .copy{font-size:13px;color:var(--muted)}
+footer .copy{font-size:13px;opacity:0.85}
 </style>
 </head>
 <body>
@@ -75,8 +78,9 @@ footer .copy{font-size:13px;color:var(--muted)}
 </header>
 
 <main class="wrap">
+  <!-- Panel quản lý bài viết -->
   <section class="panel">
-    <h3 style="margin:0 0 8px">Bài viết</h3>
+    <h3>Bài viết</h3>
     <div class="tools">
       <button id="newBtn">+ Bài mới</button>
       <button id="deleteBtn">Xóa</button>
@@ -86,61 +90,77 @@ footer .copy{font-size:13px;color:var(--muted)}
     </div>
     <div class="list" id="postList"></div>
   </section>
+
   <section class="panel">
     <label>Tiêu đề</label>
     <input id="titleInput" type="text" placeholder="Nhập tiêu đề bài viết" />
     <textarea id="editor"></textarea>
-    <div class="note">Bạn có thể dán ảnh hoặc chèn ảnh vào nội dung. Ảnh lưu dạng base64.</div>
+    <div class="note">Bạn có thể dán ảnh hoặc chèn ảnh. Ảnh được lưu dưới dạng base64.</div>
+  </section>
+</main>
+
+<!-- Panel quản lý liên kết (chỉ admin mới thấy) -->
+<main class="wrap" id="linkPanel" style="display:none">
+  <section class="panel" style="grid-column:1/-1">
+    <h3>Quản lý liên kết website</h3>
+    <div class="tools">
+      <button id="newLinkBtn">+ Thêm liên kết</button>
+      <button id="delLinkBtn">Xóa</button>
+      <button id="saveLinkBtn">Lưu/Cập nhật</button>
+    </div>
+    <input id="linkTitle" type="text" placeholder="Tên website">
+    <input id="linkUrl" type="text" placeholder="Địa chỉ (URL)">
+    <div class="list" id="linkListAdmin"></div>
   </section>
 </main>
 
 <footer>
   <p><strong>Viện Hải dương học</strong></p>
-  <p>Địa chỉ: Số 01, đường Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
+  <p>Địa chỉ: Số 01 Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
   <p>Điện thoại: (84.258) 590 037</p>
   <p class="copy">Copyright © 2025 - Trung tâm Dữ liệu và Ứng dụng khoa học công nghệ Biển.</p>
 </footer>
 
 <script>
+/* Kiểm tra đăng nhập */
 (function guard(){
   const user = localStorage.getItem('loggedInUser');
-  if(!user){ location.href='login.html'; }
-  document.getElementById('logout').onclick = ()=>{
-    localStorage.removeItem('loggedInUser');
-    location.href = 'index.html';
-  };
+  if(!user){ location.href='login.html'; return; }
+  document.getElementById('logout').onclick=()=>{localStorage.removeItem('loggedInUser');location.href='index.html';};
+  if(user==="admin"){document.getElementById('linkPanel').style.display="grid";}
 })();
-function getPosts(){ try{ return JSON.parse(localStorage.getItem('posts')||'[]'); }catch(e){ return []; } }
+
+/* ==== Quản lý bài viết ==== */
+function getPosts(){ try{return JSON.parse(localStorage.getItem('posts')||'[]');}catch(e){return[];} }
 function setPosts(arr){ localStorage.setItem('posts', JSON.stringify(arr)); }
-
 tinymce.init({
-  selector: '#editor',height:540,menubar:true,branding:false,promotion:false,paste_data_images:true,
+  selector:'#editor',height:500,menubar:true,branding:false,promotion:false,paste_data_images:true,
   plugins:'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
-  toolbar:'undo redo | styles fontsize | bold italic underline strikethrough forecolor backcolor | alignleft aligncenter alignright alignjustify | outdent indent | bullist numlist | table link image media | blockquote hr subscript superscript | removeformat | fullscreen code',
+  toolbar:'undo redo | styles fontsize | bold italic underline forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | table link image media | removeformat | fullscreen code',
   content_style:'body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;font-size:15px} img{max-width:100%;height:auto}',
-  images_upload_handler:(blobInfo)=>new Promise((res)=>{res('data:'+blobInfo.blob().type+';base64,'+blobInfo.base64());}),
-  file_picker_types:'image',
-  file_picker_callback:(cb,value,meta)=>{
-    if(meta.filetype==='image'){
-      const input=document.createElement('input');input.type='file';input.accept='image/*';
-      input.onchange=function(){const f=this.files[0];const r=new FileReader();r.onload=()=>cb(r.result,{title:f.name});r.readAsDataURL(f)};
-      input.click();
-    }
-  }
+  images_upload_handler:(b)=>new Promise(res=>{res("data:"+b.blob().type+";base64,"+b.base64());})
 });
-
 let currentId=null;
 const listEl=document.getElementById('postList'),titleEl=document.getElementById('titleInput');
-function fmtDate(ts){const d=new Date(ts||Date.now());return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
-function refreshList(){const posts=getPosts().sort((a,b)=>b.updatedAt-a.updatedAt);listEl.innerHTML='';for(const p of posts){const div=document.createElement('div');div.className='item';div.dataset.id=p.id;div.innerHTML=`<strong>${p.title||'(Không tiêu đề)'}</strong><br><small>${fmtDate(p.updatedAt||p.createdAt)}</small>`;div.onclick=()=>loadPost(p.id);listEl.appendChild(div);}}
-async function loadPost(id){const posts=getPosts();const p=posts.find(x=>x.id===id);if(!p)return;currentId=id;titleEl.value=p.title||'';await tinymce.get('editor').setContent(p.content||'');}
-async function savePost(){const posts=getPosts();const html=tinymce.get('editor').getContent();if(currentId==null){const obj={id:Date.now(),title:(titleEl.value||'').trim()||'(Không tiêu đề)',content:html,createdAt:Date.now(),updatedAt:Date.now()};posts.push(obj);setPosts(posts);currentId=obj.id;}else{const idx=posts.findIndex(x=>x.id===currentId);if(idx>-1){posts[idx].title=(titleEl.value||'').trim()||'(Không tiêu đề)';posts[idx].content=html;posts[idx].updatedAt=Date.now();setPosts(posts);}}refreshList();alert('Đã lưu!');}
+function fmtDate(ts){const d=new Date(ts||Date.now());return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
+function refreshList(){const posts=getPosts().sort((a,b)=>b.updatedAt-a.updatedAt);listEl.innerHTML='';for(const p of posts){const div=document.createElement('div');div.className='item';div.dataset.id=p.id;div.innerHTML=`<strong>${p.title}</strong><br><small>${fmtDate(p.updatedAt)}</small>`;div.onclick=()=>loadPost(p.id);listEl.appendChild(div);}}
+async function loadPost(id){const posts=getPosts();const p=posts.find(x=>x.id===id);if(!p)return;currentId=id;titleEl.value=p.title;await tinymce.get('editor').setContent(p.content);}
+async function savePost(){const posts=getPosts();const html=tinymce.get('editor').getContent();if(currentId==null){const obj={id:Date.now(),title:(titleEl.value||'(Không tiêu đề)'),content:html,createdAt:Date.now(),updatedAt:Date.now()};posts.push(obj);setPosts(posts);currentId=obj.id;}else{const idx=posts.findIndex(x=>x.id===currentId);if(idx>-1){posts[idx].title=titleEl.value;posts[idx].content=html;posts[idx].updatedAt=Date.now();setPosts(posts);}}refreshList();alert("Đã lưu!");}
 function newPost(){currentId=null;titleEl.value='';tinymce.get('editor').setContent('');}
-function deletePost(){if(currentId==null){alert('Chưa chọn bài để xóa.');return;}if(!confirm('Xóa bài này?'))return;const posts=getPosts().filter(x=>x.id!==currentId);setPosts(posts);newPost();refreshList();}
+function deletePost(){if(currentId==null){alert("Chưa chọn bài.");return;}if(!confirm("Xóa bài này?"))return;let posts=getPosts().filter(x=>x.id!==currentId);setPosts(posts);newPost();refreshList();}
 document.getElementById('saveBtn').onclick=savePost;document.getElementById('newBtn').onclick=newPost;document.getElementById('deleteBtn').onclick=deletePost;
 document.getElementById('importDocxBtn').onclick=()=>document.getElementById('docxInput').click();
 document.getElementById('docxInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const ab=await f.arrayBuffer();const result=await window.mammoth.convertToHtml({arrayBuffer:ab});tinymce.get('editor').execCommand('mceInsertContent',false,result.value);e.target.value='';};
 refreshList();
+
+/* ==== Quản lý liên kết (chỉ admin) ==== */
+function getLinks(){try{return JSON.parse(localStorage.getItem('links')||'[]');}catch(e){return[];}}
+function setLinks(arr){localStorage.setItem('links',JSON.stringify(arr));}
+let currentLinkId=null;
+function refreshLinks(){const links=getLinks();const list=document.getElementById('linkListAdmin');if(!list)return;list.innerHTML='';for(const l of links){const div=document.createElement('div');div.className='item';div.dataset.id=l.id;div.textContent=`${l.title} (${l.url})`;div.onclick=()=>{currentLinkId=l.id;document.getElementById('linkTitle').value=l.title;document.getElementById('linkUrl').value=l.url;};list.appendChild(div);}}
+function saveLink(){const title=document.getElementById('linkTitle').value.trim();const url=document.getElementById('linkUrl').value.trim();if(!title||!url){alert("Nhập đủ thông tin!");return;}let links=getLinks();if(currentLinkId==null){links.push({id:Date.now(),title,url});}else{const idx=links.findIndex(x=>x.id===currentLinkId);if(idx>-1){links[idx].title=title;links[idx].url=url;}}setLinks(links);refreshLinks();alert("Đã lưu liên kết!");}
+function deleteLink(){if(currentLinkId==null){alert("Chưa chọn link.");return;}if(!confirm("Xóa link này?"))return;let links=getLinks().filter(x=>x.id!==currentLinkId);setLinks(links);currentLinkId=null;document.getElementById('linkTitle').value='';document.getElementById('linkUrl').value='';refreshLinks();}
+if(document.getElementById('saveLinkBtn')){document.getElementById('saveLinkBtn').onclick=saveLink;document.getElementById('newLinkBtn').onclick=()=>{currentLinkId=null;document.getElementById('linkTitle').value='';document.getElementById('linkUrl').value='';};document.getElementById('delLinkBtn').onclick=deleteLink;refreshLinks();}
 </script>
 </body>
 </html>
