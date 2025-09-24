@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Quản trị – Viện Hải dương học</title>
 
+<!-- TinyMCE open-source (không cần API key) -->
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.3/tinymce.min.js"></script>
+<!-- Mammoth: import .docx -->
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
 
 <style>
@@ -52,7 +54,7 @@ input[type="text"]{width:100%;padding:10px;border-radius:10px;border:1px solid #
 @media (max-width:1000px){.wrap{grid-template-columns:1fr}}
 .tox.tox-tinymce{border-radius:12px; overflow:hidden}
 
-/* Footer */
+/* Footer (banner) */
 footer{position:relative;margin-top:40px;padding:30px 20px;text-align:center;
   background:url('banner.jpg') center/cover no-repeat;color:#fff;border-top:1px solid #004d70}
 footer::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)}
@@ -78,89 +80,274 @@ footer .copy{font-size:13px;opacity:0.85}
 </header>
 
 <main class="wrap">
-  <!-- Panel quản lý bài viết -->
+  <!-- Panel danh sách & công cụ -->
   <section class="panel">
-    <h3>Bài viết</h3>
+    <h3 style="margin:0 0 8px">Bài viết</h3>
+
     <div class="tools">
+      <!-- CRUD -->
       <button id="newBtn">+ Bài mới</button>
       <button id="deleteBtn">Xóa</button>
       <button id="saveBtn">Lưu/Cập nhật</button>
+
+      <!-- Import Word -->
       <input id="docxInput" type="file" accept=".docx" style="display:none">
       <button id="importDocxBtn">Import Word (.docx)</button>
+
+      <!-- Export / Import JSON -->
+      <button id="exportJsonBtn" title="Xuất toàn bộ bài viết ra file JSON">Export JSON</button>
+      <input id="jsonInputReplace" type="file" accept="application/json" style="display:none">
+      <button id="importJsonReplaceBtn" title="Nhập JSON và THAY THẾ toàn bộ dữ liệu hiện có">Import JSON (Thay thế)</button>
+
+      <input id="jsonInputMerge" type="file" accept="application/json" style="display:none">
+      <button id="importJsonMergeBtn" title="Nhập JSON và GỘP vào dữ liệu hiện có (giữ bài trùng id thì cập nhật)">Import JSON (Gộp)</button>
     </div>
+
     <div class="list" id="postList"></div>
   </section>
 
+  <!-- Panel soạn thảo -->
   <section class="panel">
     <label>Tiêu đề</label>
     <input id="titleInput" type="text" placeholder="Nhập tiêu đề bài viết" />
     <textarea id="editor"></textarea>
-    <div class="note">Bạn có thể dán ảnh hoặc chèn ảnh. Ảnh được lưu dưới dạng base64.</div>
-  </section>
-</main>
-
-<!-- Panel quản lý liên kết (chỉ admin mới thấy) -->
-<main class="wrap" id="linkPanel" style="display:none">
-  <section class="panel" style="grid-column:1/-1">
-    <h3>Quản lý liên kết website</h3>
-    <div class="tools">
-      <button id="newLinkBtn">+ Thêm liên kết</button>
-      <button id="delLinkBtn">Xóa</button>
-      <button id="saveLinkBtn">Lưu/Cập nhật</button>
+    <div class="note">
+      • Dán ảnh trực tiếp (Ctrl/Cmd + V) hoặc chèn ảnh → ảnh sẽ lưu dạng <code>base64</code>.<br>
+      • Ngày hiển thị theo định dạng <b>dd/mm/yyyy</b> trên trang chủ và trang bài viết.
     </div>
-    <input id="linkTitle" type="text" placeholder="Tên website">
-    <input id="linkUrl" type="text" placeholder="Địa chỉ (URL)">
-    <div class="list" id="linkListAdmin"></div>
   </section>
 </main>
 
 <footer>
   <p><strong>Viện Hải dương học</strong></p>
-  <p>Địa chỉ: Số 01 Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
+  <p>Địa chỉ: Số 01, đường Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
   <p>Điện thoại: (84.258) 590 037</p>
-  <p class="copy">Copyright © 2025 - Trung tâm Dữ liệu và Ứng dụng khoa học công nghệ Biển.</p>
+  <p class="copy">© 2025 - Trung tâm Dữ liệu và Ứng dụng khoa học công nghệ Biển.</p>
 </footer>
 
 <script>
-/* Kiểm tra đăng nhập */
+/* ======= Bảo vệ trang + Thoát về Trang chủ ======= */
 (function guard(){
   const user = localStorage.getItem('loggedInUser');
   if(!user){ location.href='login.html'; return; }
-  document.getElementById('logout').onclick=()=>{localStorage.removeItem('loggedInUser');location.href='index.html';};
-  if(user==="admin"){document.getElementById('linkPanel').style.display="grid";}
+  document.getElementById('logout').onclick = ()=>{
+    localStorage.removeItem('loggedInUser');
+    location.href = 'index.html';
+  };
 })();
 
-/* ==== Quản lý bài viết ==== */
-function getPosts(){ try{return JSON.parse(localStorage.getItem('posts')||'[]');}catch(e){return[];} }
+/* ======= LocalStorage helpers ======= */
+function getPosts(){ try{ return JSON.parse(localStorage.getItem('posts')||'[]'); }catch(e){ return []; } }
 function setPosts(arr){ localStorage.setItem('posts', JSON.stringify(arr)); }
-tinymce.init({
-  selector:'#editor',height:500,menubar:true,branding:false,promotion:false,paste_data_images:true,
-  plugins:'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
-  toolbar:'undo redo | styles fontsize | bold italic underline forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | table link image media | removeformat | fullscreen code',
-  content_style:'body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;font-size:15px} img{max-width:100%;height:auto}',
-  images_upload_handler:(b)=>new Promise(res=>{res("data:"+b.blob().type+";base64,"+b.base64());})
-});
-let currentId=null;
-const listEl=document.getElementById('postList'),titleEl=document.getElementById('titleInput');
-function fmtDate(ts){const d=new Date(ts||Date.now());return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
-function refreshList(){const posts=getPosts().sort((a,b)=>b.updatedAt-a.updatedAt);listEl.innerHTML='';for(const p of posts){const div=document.createElement('div');div.className='item';div.dataset.id=p.id;div.innerHTML=`<strong>${p.title}</strong><br><small>${fmtDate(p.updatedAt)}</small>`;div.onclick=()=>loadPost(p.id);listEl.appendChild(div);}}
-async function loadPost(id){const posts=getPosts();const p=posts.find(x=>x.id===id);if(!p)return;currentId=id;titleEl.value=p.title;await tinymce.get('editor').setContent(p.content);}
-async function savePost(){const posts=getPosts();const html=tinymce.get('editor').getContent();if(currentId==null){const obj={id:Date.now(),title:(titleEl.value||'(Không tiêu đề)'),content:html,createdAt:Date.now(),updatedAt:Date.now()};posts.push(obj);setPosts(posts);currentId=obj.id;}else{const idx=posts.findIndex(x=>x.id===currentId);if(idx>-1){posts[idx].title=titleEl.value;posts[idx].content=html;posts[idx].updatedAt=Date.now();setPosts(posts);}}refreshList();alert("Đã lưu!");}
-function newPost(){currentId=null;titleEl.value='';tinymce.get('editor').setContent('');}
-function deletePost(){if(currentId==null){alert("Chưa chọn bài.");return;}if(!confirm("Xóa bài này?"))return;let posts=getPosts().filter(x=>x.id!==currentId);setPosts(posts);newPost();refreshList();}
-document.getElementById('saveBtn').onclick=savePost;document.getElementById('newBtn').onclick=newPost;document.getElementById('deleteBtn').onclick=deletePost;
-document.getElementById('importDocxBtn').onclick=()=>document.getElementById('docxInput').click();
-document.getElementById('docxInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;const ab=await f.arrayBuffer();const result=await window.mammoth.convertToHtml({arrayBuffer:ab});tinymce.get('editor').execCommand('mceInsertContent',false,result.value);e.target.value='';};
-refreshList();
 
-/* ==== Quản lý liên kết (chỉ admin) ==== */
-function getLinks(){try{return JSON.parse(localStorage.getItem('links')||'[]');}catch(e){return[];}}
-function setLinks(arr){localStorage.setItem('links',JSON.stringify(arr));}
-let currentLinkId=null;
-function refreshLinks(){const links=getLinks();const list=document.getElementById('linkListAdmin');if(!list)return;list.innerHTML='';for(const l of links){const div=document.createElement('div');div.className='item';div.dataset.id=l.id;div.textContent=`${l.title} (${l.url})`;div.onclick=()=>{currentLinkId=l.id;document.getElementById('linkTitle').value=l.title;document.getElementById('linkUrl').value=l.url;};list.appendChild(div);}}
-function saveLink(){const title=document.getElementById('linkTitle').value.trim();const url=document.getElementById('linkUrl').value.trim();if(!title||!url){alert("Nhập đủ thông tin!");return;}let links=getLinks();if(currentLinkId==null){links.push({id:Date.now(),title,url});}else{const idx=links.findIndex(x=>x.id===currentLinkId);if(idx>-1){links[idx].title=title;links[idx].url=url;}}setLinks(links);refreshLinks();alert("Đã lưu liên kết!");}
-function deleteLink(){if(currentLinkId==null){alert("Chưa chọn link.");return;}if(!confirm("Xóa link này?"))return;let links=getLinks().filter(x=>x.id!==currentLinkId);setLinks(links);currentLinkId=null;document.getElementById('linkTitle').value='';document.getElementById('linkUrl').value='';refreshLinks();}
-if(document.getElementById('saveLinkBtn')){document.getElementById('saveLinkBtn').onclick=saveLink;document.getElementById('newLinkBtn').onclick=()=>{currentLinkId=null;document.getElementById('linkTitle').value='';document.getElementById('linkUrl').value='';};document.getElementById('delLinkBtn').onclick=deleteLink;refreshLinks();}
+/* ======= TinyMCE setup ======= */
+tinymce.init({
+  selector: '#editor',
+  height: 540,
+  menubar: true,
+  branding: false,
+  promotion: false,
+  paste_data_images: true,  // cho phép dán ảnh base64
+  plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
+  toolbar: [
+    'undo redo | styles | fontsize | bold italic underline strikethrough forecolor backcolor |',
+    'alignleft aligncenter alignright alignjustify | outdent indent | bullist numlist |',
+    'table | link image media | blockquote hr subscript superscript | removeformat | fullscreen code'
+  ].join(' '),
+  content_style: 'body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;font-size:15px} img{max-width:100%;height:auto} table{border-collapse:collapse} table,td,th{border:1px solid #ddd} td,th{padding:6px}',
+  images_upload_handler: (blobInfo) => new Promise((resolve) => {
+    resolve('data:' + blobInfo.blob().type + ';base64,' + blobInfo.base64());
+  }),
+  file_picker_types: 'image',
+  file_picker_callback: (cb, value, meta) => {
+    if (meta.filetype === 'image') {
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = 'image/*';
+      input.onchange = function(){
+        const file = this.files[0];
+        const reader = new FileReader();
+        reader.onload = () => cb(reader.result, { title: file.name });
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    }
+  }
+});
+
+/* ======= CRUD ======= */
+let currentId = null;
+const listEl = document.getElementById('postList');
+const titleEl = document.getElementById('titleInput');
+
+function fmtDate(ts){
+  const d = new Date(ts||Date.now());
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+function refreshList(){
+  const posts = getPosts().sort((a,b)=>b.updatedAt-a.updatedAt);
+  listEl.innerHTML='';
+  for(const p of posts){
+    const div = document.createElement('div');
+    div.className='item';
+    div.dataset.id = p.id;
+    div.innerHTML = `<strong>${p.title||'(Không tiêu đề)'}</strong><br><small>${fmtDate(p.updatedAt||p.createdAt)}</small>`;
+    div.onclick = ()=> loadPost(p.id);
+    listEl.appendChild(div);
+  }
+}
+
+async function loadPost(id){
+  const posts = getPosts();
+  const p = posts.find(x=>x.id===id);
+  if(!p) return;
+  currentId = id;
+  titleEl.value = p.title||'';
+  await tinymce.get('editor').setContent(p.content||'');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function savePost(){
+  const posts = getPosts();
+  const html = tinymce.get('editor').getContent();
+  if(currentId==null){
+    const obj = {
+      id: Date.now(),
+      title: (titleEl.value||'').trim() || '(Không tiêu đề)',
+      content: html,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    posts.push(obj);
+    setPosts(posts);
+    currentId = obj.id;
+  }else{
+    const idx = posts.findIndex(x=>x.id===currentId);
+    if(idx>-1){
+      posts[idx].title = (titleEl.value||'').trim() || '(Không tiêu đề)';
+      posts[idx].content = html;
+      posts[idx].updatedAt = Date.now();
+      setPosts(posts);
+    }
+  }
+  refreshList();
+  alert('Đã lưu!');
+}
+
+function newPost(){
+  currentId = null;
+  titleEl.value='';
+  tinymce.get('editor').setContent('');
+}
+
+function deletePost(){
+  if(currentId==null){ alert('Chưa chọn bài để xóa.'); return; }
+  if(!confirm('Xóa bài này?')) return;
+  const posts = getPosts().filter(x=>x.id!==currentId);
+  setPosts(posts);
+  newPost();
+  refreshList();
+}
+
+/* ======= Import Word (.docx) -> HTML ======= */
+document.getElementById('importDocxBtn').onclick = ()=> document.getElementById('docxInput').click();
+document.getElementById('docxInput').onchange = async (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  const arrayBuffer = await f.arrayBuffer();
+  const result = await window.mammoth.convertToHtml({arrayBuffer});
+  tinymce.get('editor').execCommand('mceInsertContent', false, result.value);
+  e.target.value='';
+};
+
+/* ======= Export / Import JSON ======= */
+/* Export: tải file posts-YYYYMMDD-HHMMSS.json */
+document.getElementById('exportJsonBtn').onclick = ()=>{
+  const posts = getPosts();
+  const blob = new Blob([JSON.stringify(posts, null, 2)], {type:'application/json'});
+  const now = new Date();
+  const f = `posts-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}.json`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = f; a.click();
+  URL.revokeObjectURL(url);
+};
+
+/* Import (THAY THẾ) */
+document.getElementById('importJsonReplaceBtn').onclick = ()=> document.getElementById('jsonInputReplace').click();
+document.getElementById('jsonInputReplace').onchange = async (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  if(!confirm('Import và THAY THẾ toàn bộ dữ liệu bài viết hiện có?')){ e.target.value=''; return; }
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const normalized = normalizePostsArray(data);
+    setPosts(normalized);
+    newPost(); refreshList();
+    alert('Đã import (thay thế) thành công!');
+  }catch(err){
+    alert('File JSON không hợp lệ!');
+  }finally{
+    e.target.value='';
+  }
+};
+
+/* Import (GỘP/MERGE) */
+document.getElementById('importJsonMergeBtn').onclick = ()=> document.getElementById('jsonInputMerge').click();
+document.getElementById('jsonInputMerge').onchange = async (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const incoming = normalizePostsArray(data);
+    const current = getPosts();
+    // map theo id: nếu trùng id => cập nhật; nếu mới => thêm
+    const map = new Map(current.map(p=>[String(p.id), p]));
+    for(const p of incoming){
+      const key = String(p.id);
+      if(map.has(key)){
+        // cập nhật title/content/updatedAt nếu bài import "mới hơn"
+        const old = map.get(key);
+        if((p.updatedAt||0) >= (old.updatedAt||0)){
+          map.set(key, {...old, title:p.title, content:p.content, createdAt: old.createdAt || p.createdAt, updatedAt: p.updatedAt || Date.now()});
+        }
+      }else{
+        map.set(key, p);
+      }
+    }
+    const merged = Array.from(map.values());
+    setPosts(merged);
+    newPost(); refreshList();
+    alert('Đã import (gộp) thành công!');
+  }catch(err){
+    alert('File JSON không hợp lệ!');
+  }finally{
+    e.target.value='';
+  }
+};
+
+/* Chuẩn hoá mảng posts đọc từ JSON */
+function normalizePostsArray(data){
+  if(!Array.isArray(data)) throw new Error('not array');
+  return data.map((p,i)=>{
+    const id = p.id ?? Date.now()+i;
+    const title = (p.title ?? '').toString() || '(Không tiêu đề)';
+    const content = (p.content ?? '').toString();
+    const createdAt = typeof p.createdAt==='number' ? p.createdAt : Date.now();
+    const updatedAt = typeof p.updatedAt==='number' ? p.updatedAt : createdAt;
+    return {id, title, content, createdAt, updatedAt};
+  });
+}
+
+/* ======= Bind nút ======= */
+document.getElementById('saveBtn').onclick = savePost;
+document.getElementById('newBtn').onclick = newPost;
+document.getElementById('deleteBtn').onclick = deletePost;
+
+/* ======= Init ======= */
+refreshList();
 </script>
 </body>
 </html>
