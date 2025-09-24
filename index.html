@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Viện Hải dương học – Bộ sưu tập mẫu vật</title>
+<style>
+:root{--fg:#e7ecef;--muted:#9aa4ad;--accent:#6ee7b7}
+*{box-sizing:border-box}
+body{
+  margin:0;color:var(--fg);font:500 15px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial;
+  background:#07131e url('ocean.jpg') center/cover fixed no-repeat;
+}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:-1}
+
+/* Header-top = Banner */
+header{border-bottom:1px solid #1e242b}
+.header-top{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:12px 14px;
+  background:url('banner.jpg') center/cover no-repeat;
+  color:#fff;position:relative;
+}
+.header-top::after{
+  content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)
+}
+.header-top > *{position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.logo{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #fff;background:#fff}
+.title{font-size:22px;font-weight:700}
+.nav{display:flex;gap:8px}
+.nav a,.nav button{
+  padding:8px 14px;border-radius:10px;
+  border:1px solid rgba(255,255,255,.4);
+  background:rgba(0,0,0,.4);
+  color:#fff;text-decoration:none;cursor:pointer
+}
+
+/* Section title */
+.section-title{
+  text-align:center;
+  font-size:24px;
+  font-weight:700;
+  margin:20px 0;
+  color:var(--fg);
+}
+
+/* Grid bài viết */
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:rgba(20,24,29,.92);border:1px solid #1e242b;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.thumb{position:relative;height:180px;background:linear-gradient(160deg,#0e1720,#121a24)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .noimg{position:absolute;inset:0;display:grid;place-items:center;color:#a6b0bb;font-size:13px}
+.card .body{padding:14px;display:flex;flex-direction:column;height:100%}
+.card h3{margin:0 0 8px;font-size:16px}
+.card .meta{color:var(--muted);font-size:13px;margin-bottom:8px}
+.card .content{flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical}
+.card .more{margin-top:10px;text-align:right}
+.card .more a{color:var(--accent);text-decoration:none}
+.empty{color:var(--muted);text-align:center;padding:40px 0}
+.pager{display:flex;justify-content:center;gap:10px;margin:18px 0}
+.pager button{background:#14181d;border:1px solid #223;color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+
+/* Footer */
+footer{margin-top:40px;padding:20px;text-align:center;background:rgba(11,13,16,.85);color:var(--fg);border-top:1px solid #222}
+footer p{margin:6px 0}
+footer .copy{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="overlay" aria-hidden="true"></div>
+
+<header>
+  <div class="header-top">
+    <a href="index.html" class="brand">
+      <img class="logo" src="logo.png" alt="Logo" />
+      <div class="title">Viện Hải dương học</div>
+    </a>
+    <div class="nav">
+      <a href="index.html">Trang chủ</a>
+      <a id="loginBtn" href="login.html">Đăng nhập</a>
+      <a id="adminBtn" href="admin.html" style="display:none">Quản trị</a>
+      <button id="logoutBtn" style="display:none">Thoát</button>
+    </div>
+  </div>
+</header>
+
+<!-- Section title -->
+<div class="section-title">Bộ sưu tập mẫu vật</div>
+
+<main class="wrap">
+  <div id="list" class="grid"></div>
+  <div id="emptyMsg" class="empty" style="display:none">Chưa có bài viết nào.</div>
+  <div class="pager">
+    <button id="prev">← Trước</button>
+    <button id="next">Sau →</button>
+  </div>
+</main>
+
+<footer>
+  <p><strong>Viện Hải dương học</strong></p>
+  <p>Địa chỉ: Số 01, đường Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
+  <p>Điện thoại: (84.258) 590 037</p>
+  <p class="copy">Copyright © 2025 - Trung tâm Dữ liệu và Ứng dụng khoa học công nghệ Biển.</p>
+</footer>
+
+<script>
+/* ==== Auth UI ==== */
+function applyAuthUI(){
+  const u = localStorage.getItem('loggedInUser');
+  const loginBtn = document.getElementById('loginBtn');
+  const adminBtn = document.getElementById('adminBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(u){
+    loginBtn.style.display='none';
+    adminBtn.style.display='';
+    logoutBtn.style.display='';
+    logoutBtn.onclick = ()=>{ localStorage.removeItem('loggedInUser'); applyAuthUI(); render(); };
+  }else{
+    loginBtn.style.display='';
+    adminBtn.style.display='none';
+    logoutBtn.style.display='none';
+  }
+}
+applyAuthUI();
+
+/* ==== Helpers ==== */
+const PAGE_SIZE = 5; // hiển thị 5 bài viết
+let page = 0;
+function loadPosts(){
+  try{ return JSON.parse(localStorage.getItem('posts')||'[]').sort((a,b)=>b.updatedAt-a.updatedAt); }
+  catch(e){ return []; }
+}
+function fmtDate(ts){
+  const d = new Date(ts||Date.now());
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+function firstImage(html){
+  const div = document.createElement('div'); div.innerHTML = html||'';
+  const img = div.querySelector('img');
+  if(img && (img.getAttribute('src')||img.getAttribute('data-mce-src')))
+    return img.getAttribute('src') || img.getAttribute('data-mce-src');
+  return null;
+}
+function textPreview(html, n=180){
+  const div = document.createElement('div'); div.innerHTML = html||'';
+  const txt = (div.textContent||'').replace(/\s+/g,' ').trim();
+  return txt.slice(0,n);
+}
+function render(){
+  const posts = loadPosts();
+  const list = document.getElementById('list');
+  const emptyMsg = document.getElementById('emptyMsg');
+  list.innerHTML = '';
+
+  if(posts.length === 0){
+    emptyMsg.style.display='block';
+    document.getElementById('prev').disabled=true;
+    document.getElementById('next').disabled=true;
+    return;
+  }
+  emptyMsg.style.display='none';
+
+  const start = page*PAGE_SIZE;
+  const slice = posts.slice(start, start+PAGE_SIZE);
+  for(const p of slice){
+    const date = fmtDate(p.updatedAt||p.createdAt);
+    const img = firstImage(p.content);
+    const preview = textPreview(p.content);
+
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="thumb">
+        ${img ? `<img loading="lazy" src="${img}" alt="">` : `<div class="noimg">Không có ảnh</div>`}
+      </div>
+      <div class="body">
+        <h3>${p.title||'(Không tiêu đề)'}</h3>
+        <div class="meta">${date}</div>
+        <div class="content">${preview || '(Bài viết không có nội dung)'}...</div>
+        <div class="more"><a href="post.html?id=${encodeURIComponent(p.id)}">Đọc thêm…</a></div>
+      </div>
+    `;
+    list.appendChild(card);
+  }
+  document.getElementById('prev').disabled = page===0;
+  document.getElementById('next').disabled = start+PAGE_SIZE >= posts.length;
+}
+document.getElementById('prev').onclick = ()=>{ if(page>0){page--; render();} };
+document.getElementById('next').onclick = ()=>{ page++; render(); };
+render();
+</script>
+</body>
+</html>

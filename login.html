@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Đăng nhập – Viện Hải dương học</title>
+<style>
+:root{--bg:#0b0d10;--fg:#e7ecef;--muted:#9aa4ad;--card:#14181d}
+*{box-sizing:border-box} body{margin:0;background:#0b0d10;color:var(--fg);font:500 15px/1.45 system-ui}
+.header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #1f252c}
+.header img{width:40px;height:40px;border-radius:50%;border:1px solid #233}
+.header .title{font-weight:700}
+.nav{position:absolute;left:12px;top:10px;display:flex;gap:8px}
+.nav a{padding:6px 10px;border-radius:10px;border:1px solid #223;background:#14181d;color:var(--fg);text-decoration:none}
+.wrap{max-width:420px;margin:40px auto;background:var(--card);border:1px solid #1f252c;border-radius:16px;padding:18px}
+label{display:block;margin:10px 0 6px}
+input{width:100%;padding:10px;border-radius:10px;border:1px solid #293139;background:#0f141a;color:var(--fg)}
+button{width:100%;margin-top:14px;padding:10px;border-radius:10px;border:1px solid #2a323a;background:#172029;color:var(--fg);cursor:pointer}
+.small{color:var(--muted);font-size:13px;margin-top:8px}
+</style>
+<!-- sql.js (SQLite WebAssembly) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+</head>
+<body>
+<div class="nav">
+  <a href="index.html">Trang chủ</a>
+  <a href="login.html">Đăng nhập</a>
+</div>
+<header class="header">
+  <img src="logo.png" alt="Logo">
+  <div class="title">Viện Hải dương học</div>
+</header>
+
+<main class="wrap">
+  <h2 style="margin:0 0 10px">Đăng nhập</h2>
+  <form id="form">
+    <label>Tên đăng nhập</label>
+    <input id="u" autocomplete="username" />
+    <label>Mật khẩu</label>
+    <input id="p" type="password" autocomplete="current-password" />
+    <button>Đăng nhập</button>
+  </form>
+  <div id="msg" class="small" style="color:#f99"></div>
+</main>
+
+<script>
+/* Khởi tạo hoặc tải DB SQLite từ localStorage */
+let db;
+async function initDB(){
+  const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` });
+  const saved = localStorage.getItem('vhnh_users_db');
+  db = saved ? new SQL.Database(Uint8Array.from(atob(saved), c => c.charCodeAt(0)))
+             : new SQL.Database();
+
+  // Tạo bảng & seed nếu lần đầu
+  db.run(`CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT);`);
+  const res = db.exec(`SELECT count(*) AS c FROM users`)[0];
+  const count = res ? res.values[0][0] : 0;
+
+  if(!count){
+    const users = ['admin','nhaplieu1','nhaplieu2','nhaplieu3','nhaplieu4'];
+    db.run("BEGIN");
+    for(const u of users){
+      db.run("INSERT INTO users(username,password) VALUES(?,?)",[u,'01CauDa']);
+    }
+    db.run("COMMIT");
+    persistDB();
+  }
+}
+function persistDB(){
+  const binaryArray = db.export();
+  const b64 = btoa(Array.from(binaryArray).map(x=>String.fromCharCode(x)).join(''));
+  localStorage.setItem('vhnh_users_db', b64);
+}
+
+initDB();
+
+document.getElementById('form').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const u = document.getElementById('u').value.trim();
+  const p = document.getElementById('p').value;
+  if(!u||!p){return;}
+
+  try{
+    const stmt = db.prepare("SELECT username FROM users WHERE username = ? AND password = ?");
+    stmt.bind([u,p]);
+    const ok = stmt.step();
+    stmt.free();
+    if(ok){
+      localStorage.setItem('loggedInUser', u);
+      location.href = 'admin.html';
+    }else{
+      document.getElementById('msg').textContent = 'Sai tên đăng nhập hoặc mật khẩu.';
+    }
+  }catch(err){
+    document.getElementById('msg').textContent = 'Lỗi đăng nhập: ' + err.message;
+  }
+});
+</script>
+</body>
+</html>
