@@ -5,70 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Xem bài viết – Viện Hải dương học</title>
 <style>
-:root{--fg:#e7ecef;--muted:#9aa4ad;--accent:#6ee7b7}
+:root{--fg:#e7ecef;--muted:#9aa4ad}
 *{box-sizing:border-box}
-body{
-  margin:0;font:500 15px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial;
-  background:#07131e url('ocean.jpg') center/cover fixed no-repeat;
-  color:var(--fg);
-}
+body{margin:0;font:500 15px/1.45 system-ui,Segoe UI,Roboto,Arial;
+  background:#07131e url('ocean.jpg') center/cover fixed no-repeat;color:var(--fg)}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:-1}
-
-/* Header-top = Banner */
+/* Header */
 header{border-bottom:1px solid #1e242b}
-.header-top{
-  display:flex;align-items:center;justify-content:space-between;gap:14px;
-  padding:20px 24px;
-  background:url('banner.jpg') center/cover no-repeat;
-  color:#fff;position:relative;
-}
+.header-top{display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:20px 24px;background:url('banner.jpg') center/cover no-repeat;color:#fff;position:relative}
 .header-top::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)}
-.header-top > *{position:relative;z-index:1}
+.header-top>*{position:relative;z-index:1}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
-.logo{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #fff;background:#fff}
+.logo{width:50px;height:50px;border-radius:50%;border:2px solid #fff;background:#fff;object-fit:cover}
 .title{font-size:22px;font-weight:700}
 .nav{display:flex;gap:8px}
-.nav a,.nav button{
-  padding:8px 14px;border-radius:10px;
-  border:1px solid rgba(255,255,255,.4);
-  background:rgba(0,0,0,.4);
-  color:#fff;text-decoration:none;cursor:pointer
-}
-
-/* Nội dung bài (full width) */
-.main{margin:0;padding:0}
-.article{
-  background:#fffff0; /* nền trắng ngà */
-  color:#111;
-  border-radius:0;
-  box-shadow:none;
-  width:100%;
-  min-height:100vh;
-}
+.nav a,.nav button{padding:8px 14px;border-radius:10px;background:rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.4);color:#fff;text-decoration:none;cursor:pointer}
+/* Nội dung */
+.article{background:#fffff0;color:#111;min-height:100vh;width:100%}
 .article header{padding:20px 24px;border-bottom:1px solid #ddd;background:#f7f7f7}
 .article h1{margin:0 0 6px;font-size:24px}
 .meta{color:#555;font-size:13px}
-.body{padding:24px;font-size:16px;line-height:1.6}
-.body img{max-width:100%;height:auto;display:block;margin:10px auto}
-.actions{display:flex;gap:10px;justify-content:space-between;padding:16px 24px;background:#f7f7f7;border-top:1px solid #ddd}
-.actions a{color:#fff;background:#1f2937;border:1px solid #253041;border-radius:10px;padding:8px 12px;text-decoration:none}
-.center-empty{margin:40px auto;background:#fffff0;color:#111;border-radius:12px;padding:20px;border:1px solid #ddd;max-width:800px}
-
+.body{padding:24px;line-height:1.6}
+.body img{max-width:100%;height:auto;margin:10px auto;display:block}
+.actions{display:flex;justify-content:space-between;gap:10px;padding:16px 24px;border-top:1px solid #ddd;background:#f7f7f7}
+.actions a{background:#1f2937;color:#fff;border:1px solid #253041;border-radius:10px;padding:8px 12px;text-decoration:none}
 /* Footer */
-footer{margin-top:0;padding:20px;text-align:center;background:rgba(11,13,16,.85);color:var(--fg);border-top:1px solid #222}
+footer{position:relative;padding:30px 20px;text-align:center;
+  background:url('banner.jpg') center/cover no-repeat;color:#fff;border-top:1px solid #004d70}
+footer::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.45)}
+footer>*{position:relative;z-index:1}
 footer p{margin:6px 0}
-footer .copy{font-size:13px;color:var(--muted)}
+footer .copy{font-size:13px;opacity:.85}
 </style>
 </head>
 <body>
 <div class="overlay"></div>
-
 <header>
   <div class="header-top">
-    <a href="index.html" class="brand">
-      <img class="logo" src="logo.png" alt="Logo">
-      <div class="title">Viện Hải dương học</div>
-    </a>
+    <a href="index.html" class="brand"><img class="logo" src="logo.png"><div class="title">Viện Hải dương học</div></a>
     <div class="nav">
       <a href="index.html">Trang chủ</a>
       <a id="loginBtn" href="login.html">Đăng nhập</a>
@@ -77,75 +53,32 @@ footer .copy{font-size:13px;color:var(--muted)}
     </div>
   </div>
 </header>
-
-<main class="main">
+<main>
   <article class="article" id="article" style="display:none">
-    <header>
-      <h1 id="t"></h1>
-      <div id="d" class="meta"></div>
-    </header>
+    <header><h1 id="t"></h1><div id="d" class="meta"></div></header>
     <div class="body" id="c"></div>
     <div class="actions">
-      <a href="index.html">← Quay lại trang chủ</a>
-      <div></div>
+      <a href="index.html">← Trang chủ</a>
       <a id="prevLink" href="#" style="display:none">Bài trước</a>
       <a id="nextLink" href="#" style="display:none">Bài sau →</a>
     </div>
   </article>
-
-  <div id="empty" class="center-empty" style="display:none">
-    <h3 style="margin:0 0 8px">Không tìm thấy bài viết</h3>
-    <p>Kho bài rỗng hoặc đường dẫn không hợp lệ.</p>
-    <p><a href="index.html" style="color:#fff;background:#1f2937;border:1px solid #253041;border-radius:10px;padding:8px 12px;text-decoration:none">Về Trang chủ</a></p>
+  <div id="empty" style="background:#fffff0;color:#111;padding:20px;margin:20px;border-radius:12px;display:none">
+    <p>Không tìm thấy bài viết. <a href="index.html">Về trang chủ</a></p>
   </div>
 </main>
-
 <footer>
   <p><strong>Viện Hải dương học</strong></p>
-  <p>Địa chỉ: Số 01, đường Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
+  <p>Địa chỉ: Số 01 Cầu Đá, phường Nha Trang, tỉnh Khánh Hoà</p>
   <p>Điện thoại: (84.258) 590 037</p>
-  <p class="copy">Copyright © 2025 - Trung tâm Dữ liệu và Ứng dụng khoa học công nghệ Biển.</p>
+  <p class="copy">© 2025 - Trung tâm Dữ liệu và Ứng dụng khoa học công nghệ Biển.</p>
 </footer>
-
 <script>
-function applyAuthUI(){
-  const u = localStorage.getItem('loggedInUser');
-  const loginBtn = document.getElementById('loginBtn');
-  const adminBtn = document.getElementById('adminBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  if(u){
-    loginBtn.style.display='none';
-    adminBtn.style.display='';
-    logoutBtn.style.display='';
-    logoutBtn.onclick = ()=>{ localStorage.removeItem('loggedInUser'); applyAuthUI(); };
-  }else{
-    loginBtn.style.display='';
-    adminBtn.style.display='none';
-    logoutBtn.style.display='none';
-  }
-}
-applyAuthUI();
-
-function fmtDate(ts){const d=new Date(ts||Date.now());return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
-function getQueryId(){const u=new URL(location.href);return u.searchParams.get('id');}
-function getPosts(){try{return JSON.parse(localStorage.getItem('posts')||'[]');}catch(e){return [];}}
-function render(){
-  const posts=getPosts().sort((a,b)=>b.updatedAt-a.updatedAt);
-  if(!posts.length){showEmpty();return;}
-  let id=getQueryId();if(!id){id=posts[0].id;history.replaceState({},'',`?id=${encodeURIComponent(id)}`);}
-  const index=posts.findIndex(p=>String(p.id)===String(id));
-  if(index===-1){showEmpty();return;}
-  const p=posts[index];
-  document.getElementById('t').textContent=p.title||'(Không tiêu đề)';
-  document.getElementById('d').textContent=fmtDate(p.updatedAt||p.createdAt);
-  document.getElementById('c').innerHTML=p.content||'';
-  const prev=posts[index+1], next=posts[index-1];
-  const prevLink=document.getElementById('prevLink'), nextLink=document.getElementById('nextLink');
-  if(prev){prevLink.style.display='inline-block';prevLink.href=`post.html?id=${encodeURIComponent(prev.id)}`;} else prevLink.style.display='none';
-  if(next){nextLink.style.display='inline-block';nextLink.href=`post.html?id=${encodeURIComponent(next.id)}`;} else nextLink.style.display='none';
-  document.getElementById('article').style.display='';
-  document.getElementById('empty').style.display='none';
-}
+function applyAuthUI(){const u=localStorage.getItem('loggedInUser');const l=document.getElementById('loginBtn');const a=document.getElementById('adminBtn');const o=document.getElementById('logoutBtn');if(u){l.style.display='none';a.style.display='';o.style.display='';o.onclick=()=>{localStorage.removeItem('loggedInUser');applyAuthUI();};}else{l.style.display='';a.style.display='none';o.style.display='none';}}applyAuthUI();
+function fmtDate(ts){const d=new Date(ts||Date.now());return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
+function getQueryId(){return new URL(location.href).searchParams.get('id');}
+function getPosts(){try{return JSON.parse(localStorage.getItem('posts')||'[]');}catch(e){return[];}}
+function render(){const posts=getPosts().sort((a,b)=>b.updatedAt-a.updatedAt);if(!posts.length){showEmpty();return;}let id=getQueryId();if(!id){id=posts[0].id;history.replaceState({},'',`?id=${id}`);}const index=posts.findIndex(p=>String(p.id)===String(id));if(index===-1){showEmpty();return;}const p=posts[index];document.getElementById('t').textContent=p.title;document.getElementById('d').textContent=fmtDate(p.updatedAt);document.getElementById('c').innerHTML=p.content;const prev=posts[index+1],next=posts[index-1];const pl=document.getElementById('prevLink'),nl=document.getElementById('nextLink');if(prev){pl.style.display='inline-block';pl.href=`post.html?id=${prev.id}`}else pl.style.display='none';if(next){nl.style.display='inline-block';nl.href=`post.html?id=${next.id}`}else nl.style.display='none';document.getElementById('article').style.display='';document.getElementById('empty').style.display='none';}
 function showEmpty(){document.getElementById('article').style.display='none';document.getElementById('empty').style.display='';}
 render();
 </script>
